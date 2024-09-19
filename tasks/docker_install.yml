@@ -1,0 +1,37 @@
+---
+# Install curl if it is not installed
+- name: Ensure curl is installed
+  ansible.builtin.package:
+    name: curl
+    state: present
+  tags:
+    - curl_install
+
+# Task to check if Docker is already installed
+- name: Check if Docker is installed
+  ansible.builtin.command: "docker --version"
+  register: docker_check
+  ignore_errors: true  # Ignore errors in case Docker is not installed
+
+# Task to install Docker only if it is not installed
+- name: Install Docker using official script
+  ansible.builtin.shell:
+    cmd: "curl -fsSL {{ docker_install_script_url }} -o get-docker.sh && sh get-docker.sh"
+  args:
+    creates: /usr/bin/docker
+  when: docker_check.rc != 0  # Only run this task if Docker is not installed
+  register: docker_install_output
+  tags: docker_install
+
+# Task to debug Docker installation output
+- name: Debug Docker installation output
+  ansible.builtin.debug:
+    var: docker_install_output
+  when: docker_check.rc != 0  # Only debug if Docker was installed in this play
+
+# Task to add user to Docker group
+- name: Add current user to Docker group
+  ansible.builtin.command:
+    cmd: "usermod -aG docker {{ docker_user }}"
+  tags:
+    - docker_group

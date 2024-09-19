@@ -1,0 +1,7 @@
+# Variables for Docker installation and WordPress setup
+docker_install_script_url: "https://get.docker.com"
+docker_user: "{{ ansible_user }}"  # The current user to be added to the docker group
+wordpress_theme_url: "https://downloads.wordpress.org/theme/videoshark.1.0.4.zip"
+wordpress_theme_zip: "/tmp/videoshark.1.0.4.zip" # The path where the WordPress theme will be downloaded
+wordpress_theme_dir: "~/wp-docker/wp/wp-content/themes/" # The directory where the WordPress theme will be moved to
+theme_folder_name: "videoshark"  # Specific name of the unzipped theme folder

@@ -1,0 +1,54 @@
+---
+# Install unzip if it is not installed
+- name: Ensure unzip is installed
+  ansible.builtin.package:
+    name: unzip
+    state: present
+  tags:
+    - unzip_install
+
+# Task to create WordPress theme directory if not exists
+- name: Create WordPress theme directory
+  ansible.builtin.file:
+    path: "{{ wordpress_theme_dir }}"
+    state: directory
+    mode: '0755'
+  tags:
+    - wp_setup
+
+# Task to check if theme is already downloaded
+- name: Check if WordPress theme is already downloaded
+  ansible.builtin.stat:
+    path: "{{ wordpress_theme_zip }}"
+  register: theme_zip_check
+
+# Task to download WordPress theme only if it's not already downloaded
+- name: Download WordPress theme
+  ansible.builtin.get_url:
+    url: "{{ wordpress_theme_url }}"
+    dest: "{{ wordpress_theme_zip }}"
+  when: not theme_zip_check.stat.exists  # Only download if the zip file doesn't exist
+  tags:
+    - wp_theme_download
+
+# Task to check if theme is already extracted
+- name: Check if WordPress theme is already extracted
+  ansible.builtin.stat:
+    path: "{{ wordpress_theme_dir }}/{{ theme_folder_name }}"
+  register: theme_folder_check
+
+# Task to unzip WordPress theme only if it's not already extracted
+- name: Unzip WordPress theme
+  ansible.builtin.unarchive:
+    src: "{{ wordpress_theme_zip }}"
+    dest: "{{ wordpress_theme_dir }}"
+    remote_src: yes
+  when: not theme_folder_check.stat.exists  # Only extract if the folder doesn't exist
+  tags:
+    - wp_theme_extract
+
+# Debug task to print theme installation details
+- name: Provide detailed status of theme installation
+  ansible.builtin.debug:
+    msg: "WordPress theme has been downloaded and extracted to {{ wordpress_theme_dir }}."
+  when: not theme_folder_check.stat.exists  # Only show this if extraction has occurred

@@ -1,0 +1,12 @@
+---
+- name: Проверка доступности сервера
+  hosts: all
+  tasks:
+    - name: Проверка доступности
+      ping:
+      register: ping_host
+
+    - name: Debug ping output
+      ansible.builtin.debug:
+        var: ping_host
+
